@@ -1,0 +1,4 @@
+# Requirements for SQLite database (development)
+-r requirements.txt
+
+# No additional database drivers needed for SQLite

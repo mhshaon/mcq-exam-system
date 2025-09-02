@@ -1,0 +1,12 @@
+# Requirements for PostgreSQL database (production)
+-r requirements.txt
+
+# PostgreSQL drivers - try these in order if one fails:
+# Option 1: Pre-compiled binary (fastest, but may fail on some systems)
+psycopg2-binary==2.9.9
+
+# Option 2: If psycopg2-binary fails, uncomment the line below and comment the line above
+# psycopg2==2.9.9
+
+# Option 3: If both fail, try the newer version
+# psycopg2-binary>=2.9.9

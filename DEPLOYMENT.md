@@ -73,18 +73,62 @@ This project is compatible with:
 
 ### Database Issues
 
-1. **For PostgreSQL (Production)**
+#### ERROR: Failed building wheel for psycopg2-binary
+
+**Cause**: This error occurs when psycopg2-binary fails to build, usually due to missing system dependencies or incompatible Python versions.
+
+**Solutions**:
+
+1. **Use SQLite for Development (Recommended)**
+   ```bash
+   # Install without PostgreSQL dependencies
+   pip install -r requirements-sqlite.txt
+   ```
+
+2. **Fix psycopg2-binary on Ubuntu/Debian**
+   ```bash
+   # Install system dependencies
+   sudo apt update
+   sudo apt install python3-dev libpq-dev postgresql-client
+   
+   # Try installing psycopg2-binary
+   pip install psycopg2-binary
+   ```
+
+3. **Fix psycopg2-binary on Windows**
+   ```bash
+   # Install Microsoft Visual C++ Build Tools
+   # Download from: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+   
+   # Or try the source version
+   pip install psycopg2
+   ```
+
+4. **Alternative PostgreSQL drivers**
+   ```bash
+   # Try newer version
+   pip install psycopg2-binary>=2.9.9
+   
+   # Or use source version
+   pip install psycopg2==2.9.9
+   
+   # Or use alternative driver
+   pip install psycopg2cffi
+   ```
+
+5. **For Production with PostgreSQL**
    ```bash
    # Install PostgreSQL
    sudo apt install postgresql postgresql-contrib
    
-   # Install Python PostgreSQL adapter
-   pip install psycopg2-binary
+   # Use the PostgreSQL requirements file
+   pip install -r requirements-postgresql.txt
    ```
 
-2. **For SQLite (Development)**
+6. **For Development with SQLite**
    ```bash
    # No additional setup needed
+   pip install -r requirements-sqlite.txt
    python manage.py migrate
    ```
 
@@ -128,10 +172,9 @@ EMAIL_HOST_PASSWORD=your-password
 - [ ] Server configured (nginx/apache)
 - [ ] SSL certificate installed (production)
 
-## Quick Fix for Import Errors
+## Quick Fix for Common Errors
 
-If you encounter import errors, try this sequence:
-
+### For Import Errors (pkgutil.ImpImporter)
 ```bash
 # 1. Update pip and setuptools
 pip install --upgrade pip setuptools wheel
@@ -147,4 +190,20 @@ pip install -r requirements.txt
 pyenv install 3.11.7
 pyenv local 3.11.7
 pip install -r requirements.txt
+```
+
+### For psycopg2-binary Build Errors
+```bash
+# Option 1: Use SQLite for development (easiest)
+pip install -r requirements-sqlite.txt
+
+# Option 2: Try alternative PostgreSQL drivers
+pip install psycopg2cffi
+
+# Option 3: Install system dependencies (Ubuntu/Debian)
+sudo apt install python3-dev libpq-dev
+pip install psycopg2-binary
+
+# Option 4: Use source version
+pip install psycopg2==2.9.9
 ```
