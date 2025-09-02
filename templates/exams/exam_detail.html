@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ exam.title }} - Exam Details{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'exams:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">{{ exam.title }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4><i class="fas fa-clipboard-list"></i> {{ exam.title }}</h4>
+                <div>
+                    {% if exam.is_published %}
+                        <span class="badge bg-success fs-6">Published</span>
+                    {% else %}
+                        <span class="badge bg-warning fs-6">Draft</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Exam Code:</strong> <code class="fs-5">{{ exam.code }}</code>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Duration:</strong> {{ exam.duration_minutes }} minutes
+                    </div>
+                </div>
+                
+                {% if exam.description %}
+                    <div class="mb-3">
+                        <strong>Description:</strong>
+                        <p class="mt-1">{{ exam.description }}</p>
+                    </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Questions:</strong> {{ exam.num_questions }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Created:</strong> {{ exam.created_at|date:"M d, Y H:i" }}
+                    </div>
+                </div>
+                
+                {% if exam.start_time or exam.end_time %}
+                    <div class="row mb-3">
+                        {% if exam.start_time %}
+                            <div class="col-md-6">
+                                <strong>Start Time:</strong> {{ exam.start_time|date:"M d, Y H:i" }}
+                            </div>
+                        {% endif %}
+                        {% if exam.end_time %}
+                            <div class="col-md-6">
+                                <strong>End Time:</strong> {{ exam.end_time|date:"M d, Y H:i" }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                <div class="d-flex gap-2">
+                    <a href="{% url 'exams:edit_exam' exam.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> Edit Exam
+                    </a>
+                    <a href="{% url 'exams:upload_questions' exam.id %}" class="btn btn-outline-success">
+                        <i class="fas fa-upload"></i> Upload Questions
+                    </a>
+                    <a href="{% url 'exams:manage_questions' exam.id %}" class="btn btn-outline-info">
+                        <i class="fas fa-cogs"></i> Manage Questions
+                    </a>
+                    <a href="{% url 'exams:exam_results' exam.id %}" class="btn btn-outline-warning">
+                        <i class="fas fa-chart-bar"></i> View Results
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Questions Section -->
+        <div class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-question-circle"></i> Questions ({{ questions.count }})</h5>
+                <a href="{% url 'exams:upload_questions' exam.id %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Add Questions
+                </a>
+            </div>
+            <div class="card-body">
+                {% if questions %}
+                    {% for question in questions %}
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <strong>Question {{ forloop.counter }}</strong>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-3">{{ question.text }}</p>
+                                <div class="row">
+                                    {% for choice in question.choices.all %}
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" disabled>
+                                                <label class="form-check-label {% if choice.is_correct %}text-success fw-bold{% endif %}">
+                                                    {{ choice.text }}
+                                                    {% if choice.is_correct %}
+                                                        <i class="fas fa-check-circle text-success ms-1"></i>
+                                                    {% endif %}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No questions added yet.</p>
+                        <a href="{% url 'exams:upload_questions' exam.id %}" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Upload Questions
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Actions Card -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-tools"></i> Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if not exam.is_published %}
+                        <a href="{% url 'exams:publish_exam' exam.id %}" class="btn btn-success">
+                            <i class="fas fa-check"></i> Publish Exam
+                        </a>
+                    {% else %}
+                        <a href="{% url 'exams:publish_exam' exam.id %}" class="btn btn-warning">
+                            <i class="fas fa-times"></i> Unpublish Exam
+                        </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'exams:edit_exam' exam.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> Edit Exam
+                    </a>
+                    
+                    <a href="{% url 'exams:upload_questions' exam.id %}" class="btn btn-outline-success">
+                        <i class="fas fa-upload"></i> Upload Questions
+                    </a>
+                    
+                    <a href="{% url 'exams:exam_results' exam.id %}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-bar"></i> View Results
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Exam Code Card -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-key"></i> Exam Code</h5>
+            </div>
+            <div class="card-body text-center">
+                <code class="fs-3 fw-bold">{{ exam.code }}</code>
+                <p class="text-muted small mt-2">Share this code with students to join the exam</p>
+                <button class="btn btn-outline-primary btn-sm" onclick="copyCode()">
+                    <i class="fas fa-copy"></i> Copy Code
+                </button>
+            </div>
+        </div>
+        
+        <!-- Statistics Card -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar"></i> Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-primary">{{ questions.count }}</h4>
+                            <small class="text-muted">Questions</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success">{{ sessions.count }}</h4>
+                        <small class="text-muted">Sessions</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Sessions -->
+{% if sessions %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-users"></i> Recent Exam Sessions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Started</th>
+                                    <th>Status</th>
+                                    <th>Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in sessions|slice:":10" %}
+                                    <tr>
+                                        <td>{{ session.examinee.username }}</td>
+                                        <td>{{ session.started_at|date:"M d, Y H:i" }}</td>
+                                        <td>
+                                            {% if session.is_submitted %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">In Progress</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if session.is_submitted %}
+                                                <span class="badge bg-{% if session.score >= 70 %}success{% elif session.score >= 50 %}warning{% else %}danger{% endif %}">
+                                                    {{ session.score|floatformat:1 }}%
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'exams:session_detail' session.id %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyCode() {
+    const code = '{{ exam.code }}';
+    navigator.clipboard.writeText(code).then(function() {
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-primary');
+        }, 2000);
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Questions - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'exams:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'exams:exam_detail' exam.id %}">{{ exam.title }}</a></li>
+                <li class="breadcrumb-item active">Upload Questions</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-upload"></i> Upload Questions via CSV</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.csv_file.id_for_label }}" class="form-label">CSV File *</label>
+                        {{ form.csv_file }}
+                        {% if form.csv_file.errors %}
+                            <div class="text-danger">{{ form.csv_file.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">{{ form.csv_file.help_text }}</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Exam
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Upload Questions
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> CSV Format</h5>
+            </div>
+            <div class="card-body">
+                <p class="small">Your CSV file should have the following columns:</p>
+                <ul class="small">
+                    <li><strong>question</strong> - The question text</li>
+                    <li><strong>option_1</strong> - First choice (A)</li>
+                    <li><strong>option_2</strong> - Second choice (B)</li>
+                    <li><strong>option_3</strong> - Third choice (C)</li>
+                    <li><strong>option_4</strong> - Fourth choice (D)</li>
+                    <li><strong>option_5</strong> - Fifth choice (E)</li>
+                    <li><strong>correct_answer</strong> - Number (1-5) of correct option</li>
+                </ul>
+                
+                <div class="mt-3">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="downloadSample()">
+                        <i class="fas fa-download"></i> Download Sample CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-example"></i> Example</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>question</th>
+                                <th>option_1</th>
+                                <th>option_2</th>
+                                <th>option_3</th>
+                                <th>option_4</th>
+                                <th>option_5</th>
+                                <th>correct_answer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>What is 2+2?</td>
+                                <td>3</td>
+                                <td>4</td>
+                                <td>5</td>
+                                <td>6</td>
+                                <td>7</td>
+                                <td>2</td>
+                            </tr>
+                            <tr>
+                                <td>Capital of France?</td>
+                                <td>London</td>
+                                <td>Paris</td>
+                                <td>Berlin</td>
+                                <td>Madrid</td>
+                                <td>Rome</td>
+                                <td>2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function downloadSample() {
+    const csvContent = `question,option_1,option_2,option_3,option_4,option_5,correct_answer
+"What is 2+2?","3","4","5","6","7","2"
+"What is the capital of France?","London","Paris","Berlin","Madrid","Rome","2"
+"Which planet is closest to the Sun?","Venus","Mercury","Earth","Mars","Jupiter","2"
+"What is the largest mammal?","Elephant","Blue whale","Giraffe","Hippopotamus","Polar bear","2"`;
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sample_questions.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+// File upload preview
+document.getElementById('{{ form.csv_file.id_for_label }}').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            const lines = text.split('\n');
+            if (lines.length > 0) {
+                const headers = lines[0].split(',');
+                console.log('CSV Headers:', headers);
+            }
+        };
+        reader.readAsText(file);
+    }
+});
+</script>
+{% endblock %}

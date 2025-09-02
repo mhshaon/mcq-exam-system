@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% block title %}Exam History - MCQ Exam System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-history"></i> Exam History
+        </h2>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ sessions.count }}</h4>
+                        <p class="mb-0">Total Exams</p>
+                    </div>
+                    <i class="fas fa-clipboard-check fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ sessions|length }}</h4>
+                        <p class="mb-0">Completed</p>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>
+                            {% if sessions %}
+                                {{ sessions|length|floatformat:0 }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </h4>
+                        <p class="mb-0">Average Score</p>
+                    </div>
+                    <i class="fas fa-chart-line fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>
+                            {% for session in sessions %}
+                                {% if session.score >= 70 %}{{ forloop.counter0|add:1 }}{% endif %}
+                            {% endfor %}
+                        </h4>
+                        <p class="mb-0">Passed (≥70%)</p>
+                    </div>
+                    <i class="fas fa-trophy fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5><i class="fas fa-list"></i> Exam Sessions</h5>
+        <a href="{% url 'exams:join_exam' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Take New Exam
+        </a>
+    </div>
+    <div class="card-body">
+        {% if sessions %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Exam</th>
+                            <th>Examiner</th>
+                            <th>Score</th>
+                            <th>Correct/Total</th>
+                            <th>Started</th>
+                            <th>Completed</th>
+                            <th>Duration</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in sessions %}
+                            <tr>
+                                <td>
+                                    <strong>{{ session.exam.title }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ session.exam.description|truncatechars:50 }}</small>
+                                </td>
+                                <td>{{ session.exam.examiner.username }}</td>
+                                <td>
+                                    {% if session.is_submitted %}
+                                        <span class="badge bg-{% if session.score >= 70 %}success{% elif session.score >= 50 %}warning{% else %}danger{% endif %} fs-6">
+                                            {{ session.score|floatformat:1 }}%
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if session.is_submitted %}
+                                        {{ session.total_correct }}/{{ session.total_questions }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ session.started_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if session.completed_at %}
+                                        {{ session.completed_at|date:"M d, Y H:i" }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if session.completed_at %}
+                                        {% with duration=session.completed_at|timesince:session.started_at %}
+                                            {{ duration }}
+                                        {% endwith %}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if session.is_submitted %}
+                                        {% if session.exam.results_published %}
+                                            <a href="{% url 'exams:view_result' session.exam.code %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i> View Result
+                                            </a>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-clock"></i> Results Pending
+                                            </span>
+                                        {% endif %}
+                                    {% else %}
+                                        <a href="{% url 'exams:take_exam' session.exam.code %}" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-play"></i> Continue
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-clipboard-check fa-4x text-muted mb-4"></i>
+                <h4 class="text-muted">No Exam History</h4>
+                <p class="text-muted">You haven't taken any exams yet.</p>
+                <a href="{% url 'exams:join_exam' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus"></i> Take Your First Exam
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Performance Chart -->
+{% if sessions %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5><i class="fas fa-chart-line"></i> Performance Over Time</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="performanceChart" width="400" height="100"></canvas>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if sessions %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    
+    const sessions = [
+        {% for session in sessions reversed %}
+            {
+                exam: '{{ session.exam.title|escapejs }}',
+                score: {{ session.score|floatformat:1 }},
+                date: '{{ session.completed_at|date:"M d" }}'
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: sessions.map(s => s.date),
+            datasets: [{
+                label: 'Score (%)',
+                data: sessions.map(s => s.score),
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Score: ' + context.parsed.y + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

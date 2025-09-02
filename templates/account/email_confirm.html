@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}Email Confirmation - MCQ Exam System{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px 0;
+    }
+    
+    .confirm-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        padding: 50px 40px;
+        width: 100%;
+        max-width: 500px;
+        margin: 20px;
+        text-align: center;
+    }
+    
+    .confirm-header {
+        margin-bottom: 30px;
+    }
+    
+    .confirm-header h2 {
+        color: #333;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+    
+    .confirm-header p {
+        color: #666;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+    
+    .icon-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border-radius: 50%;
+        margin-bottom: 30px;
+        animation: pulse 2s infinite;
+    }
+    
+    .icon-wrapper i {
+        font-size: 32px;
+        color: white;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .email-info {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 25px 0;
+        border-left: 4px solid #667eea;
+    }
+    
+    .email-info h5 {
+        color: #333;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+    
+    .email-info p {
+        color: #666;
+        margin: 0;
+        font-size: 14px;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 12px 30px;
+        font-weight: 600;
+        font-size: 16px;
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        margin: 10px;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 30px;
+        font-weight: 600;
+        font-size: 16px;
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        margin: 10px;
+    }
+    
+    .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .steps {
+        text-align: left;
+        margin: 30px 0;
+    }
+    
+    .step {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+    }
+    
+    .step-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        background: #667eea;
+        color: white;
+        border-radius: 50%;
+        font-weight: bold;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    
+    .step-content {
+        flex: 1;
+    }
+    
+    .step-content h6 {
+        margin: 0 0 5px 0;
+        color: #333;
+        font-weight: 600;
+    }
+    
+    .step-content p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .resend-section {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .resend-section p {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+    
+    .alert {
+        border-radius: 12px;
+        border: none;
+        margin-bottom: 20px;
+    }
+    
+    .countdown {
+        font-weight: bold;
+        color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirm-container">
+    <div class="confirm-header">
+        <div class="icon-wrapper">
+            <i class="fas fa-envelope-open"></i>
+        </div>
+        <h2>Check Your Email</h2>
+        <p>We've sent you a confirmation link to verify your email address.</p>
+    </div>
+    
+    <div class="email-info">
+        <h5><i class="fas fa-info-circle me-2"></i>What's Next?</h5>
+        <p>Please check your email inbox (and spam folder) for a confirmation message from us.</p>
+    </div>
+    
+    <div class="steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h6>Check Your Email</h6>
+                <p>Look for an email from MCQ Exam System in your inbox</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h6>Click the Link</h6>
+                <p>Click the confirmation link in the email to activate your account</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h6>Start Learning</h6>
+                <p>Once confirmed, you can sign in and start taking exams</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="resend-section">
+        <p>Didn't receive the email? Check your spam folder or:</p>
+        <a href="{% url 'account_email_verification_sent' %}" class="btn btn-secondary">
+            <i class="fas fa-redo me-2"></i>Resend Confirmation
+        </a>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{% url 'account_login' %}" class="btn btn-primary">
+            <i class="fas fa-sign-in-alt me-2"></i>Back to Sign In
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add some interactive elements
+    const steps = document.querySelectorAll('.step');
+    steps.forEach((step, index) => {
+        step.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(5px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        step.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+    
+    // Auto-refresh page every 30 seconds to check for email confirmation
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
+});
+</script>
+{% endblock %}

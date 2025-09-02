@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - MCQ Exam System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+            <span class="badge bg-primary ms-2">{{ user_role|title }}</span>
+        </h2>
+    </div>
+</div>
+
+{% if user_role == 'admin' %}
+    <!-- Admin Dashboard -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ exams.count }}</h4>
+                            <p class="mb-0">Total Exams</p>
+                        </div>
+                        <i class="fas fa-clipboard-list fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ exams|length }}</h4>
+                            <p class="mb-0">Published Exams</p>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-clipboard-list"></i> All Exams</h5>
+        </div>
+        <div class="card-body">
+            {% if exams %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Examiner</th>
+                                <th>Questions</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exam in exams %}
+                                <tr>
+                                    <td>{{ exam.title }}</td>
+                                    <td>{{ exam.examiner.username }}</td>
+                                    <td>{{ exam.num_questions }}</td>
+                                    <td>{{ exam.duration_minutes }} min</td>
+                                    <td>
+                                        {% if exam.is_published %}
+                                            <span class="badge bg-success">Published</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Draft</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ exam.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No exams found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+{% elif user_role == 'examiner' %}
+    <!-- Examiner Dashboard -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ exams.count }}</h4>
+                            <p class="mb-0">My Exams</p>
+                        </div>
+                        <i class="fas fa-clipboard-list fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ exams|length }}</h4>
+                            <p class="mb-0">Published</p>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{% url 'exams:create_exam' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create New Exam
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-clipboard-list"></i> My Exams</h5>
+        </div>
+        <div class="card-body">
+            {% if exams %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Code</th>
+                                <th>Questions</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exam in exams %}
+                                <tr>
+                                    <td>{{ exam.title }}</td>
+                                    <td><code>{{ exam.code }}</code></td>
+                                    <td>{{ exam.num_questions }}</td>
+                                    <td>{{ exam.duration_minutes }} min</td>
+                                    <td>
+                                        {% if exam.is_published %}
+                                            <span class="badge bg-success">Published</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Draft</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ exam.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'exams:edit_exam' exam.id %}" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">You haven't created any exams yet.</p>
+                    <a href="{% url 'exams:create_exam' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create Your First Exam
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+{% else %}
+    <!-- Examinee Dashboard -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ sessions.count }}</h4>
+                            <p class="mb-0">Exams Taken</p>
+                        </div>
+                        <i class="fas fa-clipboard-check fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ sessions|length }}</h4>
+                            <p class="mb-0">Completed</p>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <a href="{% url 'exams:join_exam' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-sign-in-alt"></i> Join Exam
+            </a>
+        </div>
+        <div class="col-md-6">
+            <a href="{% url 'exams:exam_history' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-history"></i> View History
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fas fa-clipboard-check"></i> Recent Exam Sessions</h5>
+        </div>
+        <div class="card-body">
+            {% if sessions %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Exam</th>
+                                <th>Score</th>
+                                <th>Status</th>
+                                <th>Started</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in sessions %}
+                                <tr>
+                                    <td>{{ session.exam.title }}</td>
+                                    <td>
+                                        {% if session.is_submitted %}
+                                            <span class="badge bg-{% if session.score >= 70 %}success{% elif session.score >= 50 %}warning{% else %}danger{% endif %}">
+                                                {{ session.score|floatformat:1 }}%
+                                            </span>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if session.is_submitted %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">In Progress</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ session.started_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if session.is_submitted %}
+                                            <a href="{% url 'exams:view_result' session.exam.code %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i> View Result
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'exams:take_exam' session.exam.code %}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-play"></i> Continue
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-clipboard-check fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">You haven't taken any exams yet.</p>
+                    <a href="{% url 'exams:join_exam' %}" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Join Your First Exam
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

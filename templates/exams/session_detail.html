@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Session Details - {{ session.exam.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'exams:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'exams:exam_detail' session.exam.id %}">{{ session.exam.title }}</a></li>
+                <li class="breadcrumb-item active">Session Details</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-user"></i> Session Details</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Student:</strong> {{ session.examinee.username }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Score:</strong> 
+                        <span class="badge bg-{% if session.score >= 70 %}success{% elif session.score >= 50 %}warning{% else %}danger{% endif %} fs-6">
+                            {{ session.score|floatformat:1 }}%
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Started:</strong> {{ session.started_at|date:"M d, Y H:i" }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Completed:</strong> {{ session.completed_at|date:"M d, Y H:i" }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Correct Answers:</strong> {{ session.total_correct }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Total Questions:</strong> {{ session.total_questions }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Answers -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="fas fa-list"></i> Detailed Answers</h5>
+            </div>
+            <div class="card-body">
+                {% for answer in answers %}
+                    <div class="card mb-3 {% if answer.is_correct %}border-success{% else %}border-danger{% endif %}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <strong>Question {{ forloop.counter }}</strong>
+                            {% if answer.is_correct %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check"></i> Correct
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times"></i> Incorrect
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">{{ answer.question.text }}</p>
+                            
+                            <div class="row">
+                                {% for choice in answer.question.choices.all %}
+                                    <div class="col-md-6 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" disabled 
+                                                   {% if choice == answer.chosen_choice %}checked{% endif %}>
+                                            <label class="form-check-label 
+                                                {% if choice == answer.chosen_choice and answer.is_correct %}text-success fw-bold
+                                                {% elif choice == answer.chosen_choice and not answer.is_correct %}text-danger fw-bold
+                                                {% elif choice.is_correct %}text-success
+                                                {% endif %}">
+                                                {{ choice.text }}
+                                                {% if choice == answer.chosen_choice and answer.is_correct %}
+                                                    <i class="fas fa-check-circle text-success ms-1"></i>
+                                                {% elif choice == answer.chosen_choice and not answer.is_correct %}
+                                                    <i class="fas fa-times-circle text-danger ms-1"></i>
+                                                {% elif choice.is_correct %}
+                                                    <i class="fas fa-check-circle text-success ms-1"></i>
+                                                {% endif %}
+                                            </label>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie"></i> Performance Summary</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <div class="position-relative d-inline-block">
+                        <svg width="120" height="120">
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="#e9ecef" stroke-width="10"/>
+                            <circle cx="60" cy="60" r="50" fill="none" 
+                                    stroke="{% if session.score >= 70 %}#28a745{% elif session.score >= 50 %}#ffc107{% else %}#dc3545{% endif %}" 
+                                    stroke-width="10" 
+                                    stroke-dasharray="{{ session.score|floatformat:0 }} 100" 
+                                    stroke-dashoffset="25" 
+                                    transform="rotate(-90 60 60)"/>
+                        </svg>
+                        <div class="position-absolute top-50 start-50 translate-middle">
+                            <span class="fs-4 fw-bold">{{ session.score|floatformat:0 }}%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-success">{{ session.total_correct }}</h4>
+                            <small class="text-muted">Correct</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-danger">{{ session.total_questions|add:"-"|add:session.total_correct }}</h4>
+                        <small class="text-muted">Incorrect</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

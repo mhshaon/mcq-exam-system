@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ exam.title }} - Take Exam{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timer {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: #dc3545;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        font-weight: bold;
+        font-size: 1.2em;
+        z-index: 1000;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .timer.warning {
+        background: #ffc107;
+        color: #000;
+    }
+    .timer.danger {
+        background: #dc3545;
+        animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    .question-card {
+        margin-bottom: 30px;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        transition: border-color 0.3s;
+    }
+    .question-card:hover {
+        border-color: #007bff;
+    }
+    .choice-option {
+        margin: 10px 0;
+        padding: 10px;
+        border: 1px solid #e9ecef;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .choice-option:hover {
+        background-color: #f8f9fa;
+        border-color: #007bff;
+    }
+    .choice-option.selected {
+        background-color: #e3f2fd;
+        border-color: #2196f3;
+    }
+    .progress-bar {
+        height: 10px;
+        border-radius: 5px;
+    }
+    .submit-section {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 20px;
+        border-top: 2px solid #e9ecef;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>{{ exam.title }}</h2>
+                <p class="text-muted">{{ exam.description }}</p>
+            </div>
+            <div>
+                <span class="badge bg-primary fs-6">Exam Code: {{ exam.code }}</span>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-4">
+            <div class="d-flex justify-content-between mb-2">
+                <span>Progress</span>
+                <span id="progress-text">0 / {{ questions.count }}</span>
+            </div>
+            <div class="progress">
+                <div id="progress-bar" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Timer -->
+<div id="timer" class="timer">
+    <i class="fas fa-clock"></i> <span id="exam-time-display">Loading...</span>
+</div>
+
+<!-- Questions -->
+<form id="exam-form">
+    {% csrf_token %}
+    <div class="row">
+        {% for question in questions %}
+            <div class="col-12 question-card" data-question-id="{{ question.id }}">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            Question {{ forloop.counter }} of {{ questions.count }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text fs-5 mb-4">{{ question.text }}</p>
+                        
+                        <div class="choices">
+                            {% for choice in question.choices.all %}
+                                <div class="choice-option" data-choice-id="{{ choice.id }}">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" 
+                                               name="question_{{ question.id }}" 
+                                               id="choice_{{ choice.id }}" 
+                                               value="{{ choice.id }}">
+                                        <label class="form-check-label" for="choice_{{ choice.id }}">
+                                            <strong><span class="option-label">{{ forloop.counter|add:"-1" }}</span>.</strong> {{ choice.text }}
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</form>
+
+<!-- Submit Section -->
+<div class="submit-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Questions Answered:</strong> <span id="answered-count">0</span> / {{ questions.count }}
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-warning me-2" onclick="saveProgress()">
+                            <i class="fas fa-save"></i> Save Progress
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="submitExam()">
+                            <i class="fas fa-check"></i> Submit Exam
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submit Confirmation Modal -->
+<div class="modal fade" id="submitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Submit Exam</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to submit your exam?</p>
+                <p class="text-muted">You have answered <span id="modal-answered-count">0</span> out of {{ questions.count }} questions.</p>
+                <p class="text-warning"><strong>Note:</strong> Once submitted, you cannot make any changes.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="confirmSubmit()">Submit Exam</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let examDuration = {{ exam.duration_minutes }} * 60; // Convert to seconds
+let startTime = new Date('{{ session.started_at|date:"c" }}');
+let endTime = new Date(startTime.getTime() + (examDuration * 1000));
+let timeRemaining = Math.max(0, Math.floor((endTime - new Date()) / 1000));
+let timerInterval;
+let answers = {};
+
+// Initialize timer
+function initTimer() {
+    updateTimer();
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+    timeRemaining = Math.max(0, Math.floor((endTime - new Date()) / 1000));
+    
+    if (timeRemaining <= 0) {
+        clearInterval(timerInterval);
+        submitExam();
+        return;
+    }
+    
+    const hours = Math.floor(timeRemaining / 3600);
+    const minutes = Math.floor((timeRemaining % 3600) / 60);
+    const seconds = timeRemaining % 60;
+    
+    const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    document.getElementById('exam-time-display').textContent = timeString;
+    
+    // Change timer color based on remaining time
+    const timer = document.getElementById('timer');
+    if (timeRemaining <= 300) { // 5 minutes
+        timer.className = 'timer danger';
+    } else if (timeRemaining <= 900) { // 15 minutes
+        timer.className = 'timer warning';
+    }
+}
+
+// Handle choice selection
+document.addEventListener('DOMContentLoaded', function() {
+    initTimer();
+    
+    // Convert option numbers to letters (A, B, C, D, E)
+    document.querySelectorAll('.option-label').forEach(function(label) {
+        const number = parseInt(label.textContent);
+        const letter = String.fromCharCode(65 + number); // 65 is ASCII for 'A'
+        label.textContent = letter;
+    });
+    
+    // Add click handlers to choice options
+    document.querySelectorAll('.choice-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+            
+            // Update visual selection
+            const questionCard = this.closest('.question-card');
+            questionCard.querySelectorAll('.choice-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            this.classList.add('selected');
+            
+            // Update answers
+            const questionId = questionCard.dataset.questionId;
+            answers[questionId] = radio.value;
+            updateUnsavedWorkFlag(); // Update unsaved work flag
+            updateProgress();
+        });
+    });
+    
+    // Load saved answers
+    loadSavedAnswers();
+});
+
+function updateProgress() {
+    const answeredCount = Object.keys(answers).length;
+    const progress = (answeredCount / {{ questions.count }}) * 100;
+    
+    document.getElementById('progress-bar').style.width = progress + '%';
+    document.getElementById('progress-text').textContent = `${answeredCount} / {{ questions.count }}`;
+    document.getElementById('answered-count').textContent = answeredCount;
+    document.getElementById('modal-answered-count').textContent = answeredCount;
+}
+
+function saveProgress() {
+    // Save answers to localStorage
+    localStorage.setItem('exam_{{ exam.code }}_answers', JSON.stringify(answers));
+    
+    // Show success message
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+    btn.classList.remove('btn-warning');
+    btn.classList.add('btn-success');
+    
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-warning');
+    }, 2000);
+}
+
+function loadSavedAnswers() {
+    const saved = localStorage.getItem('exam_{{ exam.code }}_answers');
+    if (saved) {
+        answers = JSON.parse(saved);
+        
+        // Restore visual selections
+        Object.entries(answers).forEach(([questionId, choiceId]) => {
+            const radio = document.getElementById(`choice_${choiceId}`);
+            if (radio) {
+                radio.checked = true;
+                radio.closest('.choice-option').classList.add('selected');
+            }
+        });
+        
+        updateProgress();
+    }
+}
+
+function submitExam() {
+    document.getElementById('modal-answered-count').textContent = Object.keys(answers).length;
+    new bootstrap.Modal(document.getElementById('submitModal')).show();
+}
+
+function confirmSubmit() {
+    // Clear unsaved work flag
+    clearUnsavedWork();
+    
+    // Disable form
+    document.getElementById('exam-form').style.pointerEvents = 'none';
+    
+    // Show loading
+    const submitBtn = document.querySelector('[onclick="confirmSubmit()"]');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    submitBtn.disabled = true;
+    
+    // Submit answers
+    fetch('{% url "exams:submit_exam" exam.code %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: `answers=${encodeURIComponent(JSON.stringify(answers))}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Clear saved answers
+            localStorage.removeItem('exam_{{ exam.code }}_answers');
+            
+            // Redirect to results
+            window.location.href = '{% url "exams:view_result" exam.code %}';
+        } else {
+            alert('Error submitting exam: ' + data.error);
+            submitBtn.innerHTML = 'Submit Exam';
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error submitting exam. Please try again.');
+        submitBtn.innerHTML = 'Submit Exam';
+        submitBtn.disabled = false;
+    });
+}
+
+// Auto-save every 30 seconds
+setInterval(saveProgress, 30000);
+
+// Set unsaved work flag when answers are present
+function updateUnsavedWorkFlag() {
+    if (typeof answers !== 'undefined' && Object.keys(answers).length > 0) {
+        window.hasUnsavedWork = true;
+    } else {
+        window.hasUnsavedWork = false;
+    }
+}
+
+// Update flag when answers change
+updateUnsavedWorkFlag();
+
+// Clear unsaved work flag when exam is submitted
+function clearUnsavedWork() {
+    window.hasUnsavedWork = false;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}My Exams - MCQ Exam System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-clipboard-list"></i> My Exams
+        </h2>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <a href="{% url 'exams:create_exam' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create New Exam
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5><i class="fas fa-list"></i> Created Exams</h5>
+    </div>
+    <div class="card-body">
+        {% if exams %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Code</th>
+                            <th>Questions</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exam in exams %}
+                            <tr>
+                                <td>{{ exam.title }}</td>
+                                <td><code>{{ exam.code }}</code></td>
+                                <td>{{ exam.num_questions }}</td>
+                                <td>{{ exam.duration_minutes }} min</td>
+                                <td>
+                                    {% if exam.is_published %}
+                                        <span class="badge bg-success">Published</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Draft</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ exam.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <a href="{% url 'exams:edit_exam' exam.id %}" class="btn btn-sm btn-secondary">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                <p class="text-muted">You haven't created any exams yet.</p>
+                <a href="{% url 'exams:create_exam' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Your First Exam
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

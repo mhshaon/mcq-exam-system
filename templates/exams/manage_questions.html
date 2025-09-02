@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Questions - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'exams:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'exams:exam_detail' exam.id %}">{{ exam.title }}</a></li>
+                <li class="breadcrumb-item active">Manage Questions</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4><i class="fas fa-cogs"></i> Manage Questions</h4>
+                <a href="{% url 'exams:upload_questions' exam.id %}" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Upload Questions
+                </a>
+            </div>
+            <div class="card-body">
+                {% if questions %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Question</th>
+                                    <th>Choices</th>
+                                    <th>Correct Answer</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for question in questions %}
+                                    <tr>
+                                        <td>{{ question.order }}</td>
+                                        <td>{{ question.text|truncatechars:100 }}</td>
+                                        <td>{{ question.choices.count }}</td>
+                                        <td>
+                                            {% for choice in question.choices.all %}
+                                                {% if choice.is_correct %}
+                                                    <span class="badge bg-success">{{ choice.text|truncatechars:30 }}</span>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No questions found.</p>
+                        <a href="{% url 'exams:upload_questions' exam.id %}" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Upload Questions
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

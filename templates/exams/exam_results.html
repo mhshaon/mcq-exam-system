@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Exam Results - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'exams:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'exams:exam_detail' exam.id %}">{{ exam.title }}</a></li>
+                <li class="breadcrumb-item active">Results</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4><i class="fas fa-chart-bar"></i> Exam Results</h4>
+                    <small class="text-muted">
+                        Results Status: 
+                        {% if exam.results_published %}
+                            <span class="badge bg-success">Published</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Not Published</span>
+                        {% endif %}
+                    </small>
+                </div>
+                {% if not exam.results_published %}
+                    <a href="{% url 'exams:publish_results' exam.id %}" class="btn btn-success">
+                        <i class="fas fa-check"></i> Publish Results
+                    </a>
+                {% else %}
+                    <span class="badge bg-success fs-6">
+                        <i class="fas fa-check"></i> Results Published
+                    </span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if sessions %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Started</th>
+                                    <th>Completed</th>
+                                    <th>Score</th>
+                                    <th>Correct/Total</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in sessions %}
+                                    <tr>
+                                        <td>{{ session.examinee.username }}</td>
+                                        <td>{{ session.started_at|date:"M d, Y H:i" }}</td>
+                                        <td>{{ session.completed_at|date:"M d, Y H:i" }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if session.score >= 70 %}success{% elif session.score >= 50 %}warning{% else %}danger{% endif %} fs-6">
+                                                {{ session.score|floatformat:1 }}%
+                                            </span>
+                                        </td>
+                                        <td>{{ session.total_correct }}/{{ session.total_questions }}</td>
+                                        <td>
+                                            <a href="{% url 'exams:session_detail' session.id %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i> View Details
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No exam sessions found.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
