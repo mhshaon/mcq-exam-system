@@ -124,6 +124,25 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = 'username'
 ACCOUNT_USERNAME_REQUIRED = True
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+# Additional Django Allauth settings for email authentication
+ACCOUNT_USER_MODEL_EMAIL_FIELD = 'email'
+ACCOUNT_EMAIL_SUBJECT_PREFIX = '[MCQ Exam System] '
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_MIN_LENGTH = 3
+ACCOUNT_USERNAME_BLACKLIST = ['admin', 'administrator', 'root', 'user', 'test']
+
+# Custom authentication backends
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailOrUsernameModelBackend',  # Custom backend for email/username login
+    'django.contrib.auth.backends.ModelBackend',      # Default Django backend
+    'allauth.account.auth_backends.AuthenticationBackend',  # Django Allauth backend
+]
+
 USE_I18N = True
 
 USE_TZ = True
