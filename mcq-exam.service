@@ -1,0 +1,28 @@
+[Unit]
+Description=MCQ Exam System Gunicorn daemon
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/mcq-exam
+Environment="PATH=/var/www/mcq-exam/venv/bin"
+Environment="DJANGO_SETTINGS_MODULE=config.settings_production"
+ExecStart=/var/www/mcq-exam/venv/bin/gunicorn --config gunicorn.conf.py config.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/mcq-exam
+ReadWritePaths=/var/log/gunicorn
+
+[Install]
+WantedBy=multi-user.target

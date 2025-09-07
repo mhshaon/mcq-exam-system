@@ -190,19 +190,41 @@ preload_app = True
 ### 8. Systemd Service
 
 Create `/etc/systemd/system/mcq-exam.service`:
+```bash
+# Copy the service file
+sudo cp mcq-exam.service /etc/systemd/system/mcq-exam.service
+
+# OR create manually:
+sudo nano /etc/systemd/system/mcq-exam.service
+```
+
+Service file content:
 ```ini
 [Unit]
 Description=MCQ Exam System Gunicorn daemon
-After=network.target
+After=network.target postgresql.service
+Wants=postgresql.service
 
 [Service]
+Type=notify
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/mcq-exam
 Environment="PATH=/var/www/mcq-exam/venv/bin"
+Environment="DJANGO_SETTINGS_MODULE=config.settings_production"
 ExecStart=/var/www/mcq-exam/venv/bin/gunicorn --config gunicorn.conf.py config.wsgi:application
 ExecReload=/bin/kill -s HUP $MAINPID
 Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/mcq-exam
+ReadWritePaths=/var/log/gunicorn
 
 [Install]
 WantedBy=multi-user.target
@@ -414,7 +436,43 @@ sudo -u postgres createuser --interactive --pwprompt mcq_user
 sudo -u postgres createdb --owner=mcq_user mcq_exam_db
 ```
 
-#### 5. Other Common Issues
+#### 5. "Failed to start mcq-exam.service - MCQ Exam System Gunicorn daemon"
+**Cause**: Systemd service configuration or permission issues
+
+**Solutions**:
+```bash
+# Check service status and logs
+sudo systemctl status mcq-exam
+sudo journalctl -u mcq-exam -n 50
+
+# Common fixes:
+
+# 1. Check if the service file exists and is correct
+sudo systemctl cat mcq-exam
+
+# 2. Reload systemd and restart
+sudo systemctl daemon-reload
+sudo systemctl restart mcq-exam
+
+# 3. Check file permissions
+sudo chown -R www-data:www-data /var/www/mcq-exam
+sudo chmod +x /var/www/mcq-exam/venv/bin/gunicorn
+
+# 4. Test Gunicorn manually
+cd /var/www/mcq-exam
+source venv/bin/activate
+gunicorn --config gunicorn.conf.py config.wsgi:application
+
+# 5. Check if port 8000 is available
+sudo netstat -tlnp | grep :8000
+sudo lsof -i :8000
+
+# 6. Create logs directory
+sudo mkdir -p /var/log/gunicorn
+sudo chown www-data:www-data /var/log/gunicorn
+```
+
+#### 6. Other Common Issues
 - **502 Bad Gateway**: Check if Gunicorn is running
 - **Static files not loading**: Check Nginx configuration
 - **Database connection error**: Verify database credentials
