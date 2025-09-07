@@ -23,8 +23,12 @@
 # Update system
 sudo apt update && sudo apt upgrade -y
 
-# Install Python 3.9+
-sudo apt install python3.9 python3.9-venv python3.9-dev python3-pip -y
+# Install Python 3.8+ (check available versions)
+sudo apt install python3.8 python3.8-venv python3.8-dev python3-pip -y
+# OR for newer systems:
+# sudo apt install python3.9 python3.9-venv python3.9-dev python3-pip -y
+# OR for latest:
+# sudo apt install python3.10 python3.10-venv python3.10-dev python3-pip -y
 
 # Install PostgreSQL
 sudo apt install postgresql postgresql-contrib -y
@@ -63,15 +67,20 @@ cd /var/www/mcq-exam
 # Clone your repository
 git clone https://github.com/mhshaon/mcq-exam-system.git .
 
-# Create virtual environment
-python3.9 -m venv venv
+# Create virtual environment (use your Python version)
+python3.8 -m venv venv
+# OR: python3.9 -m venv venv
+# OR: python3.10 -m venv venv
 source venv/bin/activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Upgrade pip first
+pip install --upgrade pip setuptools wheel
 
-# Install production dependencies
-pip install gunicorn psycopg2-binary
+# Install dependencies (choose based on your Python version)
+# For Python 3.8+ (most compatible):
+pip install -r requirements_compatible.txt
+# OR for Python 3.10+ (latest features):
+# pip install -r requirements_production.txt
 ```
 
 ### 4. Environment Configuration
@@ -309,7 +318,12 @@ ALLOWED_HOSTS = ['your-domain.com', 'www.your-domain.com']
 cd /var/www/mcq-exam
 git pull origin main
 source venv/bin/activate
-pip install -r requirements.txt
+
+# Upgrade pip and install dependencies
+pip install --upgrade pip setuptools wheel
+pip install -r requirements_compatible.txt
+
+# Run migrations and collect static files
 python manage.py migrate
 python manage.py collectstatic --noinput
 sudo systemctl restart mcq-exam
@@ -331,10 +345,50 @@ sudo systemctl restart mcq-exam
 ## 🆘 Troubleshooting
 
 ### Common Issues
-1. **502 Bad Gateway**: Check if Gunicorn is running
-2. **Static files not loading**: Check Nginx configuration
-3. **Database connection error**: Verify database credentials
-4. **Permission denied**: Check file ownership and permissions
+
+#### 1. "No matching distribution found for Django==5.0.6"
+**Cause**: Python version is too old (Django 5.0+ requires Python 3.10+)
+
+**Solutions**:
+```bash
+# Check Python version
+python3 --version
+
+# If Python < 3.10, use compatible requirements:
+pip install -r requirements_compatible.txt
+
+# OR upgrade Python (Ubuntu 20.04+):
+sudo apt install python3.10 python3.10-venv python3.10-dev -y
+python3.10 -m venv venv
+source venv/bin/activate
+pip install -r requirements_production.txt
+```
+
+#### 2. "ERROR: Failed building wheel for psycopg2-binary"
+**Solutions**:
+```bash
+# Install system dependencies
+sudo apt install libpq-dev build-essential -y
+
+# OR use SQLite for development:
+pip install -r requirements-sqlite.txt
+```
+
+#### 3. "AttributeError: module 'pkgutil' has no attribute 'ImpImporter'"
+**Solutions**:
+```bash
+# Upgrade pip and setuptools
+pip install --upgrade pip setuptools wheel
+
+# Use compatible requirements
+pip install -r requirements_compatible.txt
+```
+
+#### 4. Other Common Issues
+- **502 Bad Gateway**: Check if Gunicorn is running
+- **Static files not loading**: Check Nginx configuration
+- **Database connection error**: Verify database credentials
+- **Permission denied**: Check file ownership and permissions
 
 ### Useful Commands
 ```bash

@@ -1,7 +1,7 @@
 # Production requirements for MCQ Exam System
 
 # Core Django packages
-Django==5.0.6
+Django>=4.2.0,<5.1.0
 django-allauth==0.57.0
 django-cors-headers==4.3.1
 
