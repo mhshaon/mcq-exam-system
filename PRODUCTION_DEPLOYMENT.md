@@ -49,11 +49,17 @@ sudo apt install build-essential libpq-dev -y
 # Switch to postgres user
 sudo -u postgres psql
 
-# Create database and user
+# Create database and user with proper privileges
 CREATE DATABASE mcq_exam_db;
 CREATE USER mcq_user WITH PASSWORD 'your_secure_password';
 GRANT ALL PRIVILEGES ON DATABASE mcq_exam_db TO mcq_user;
+GRANT ALL PRIVILEGES ON SCHEMA public TO mcq_user;
+ALTER USER mcq_user CREATEDB;  # Allow user to create databases
 \q
+
+# Alternative: Create user interactively with proper privileges
+# sudo -u postgres createuser --interactive --pwprompt mcq_user
+# sudo -u postgres createdb --owner=mcq_user mcq_exam_db
 ```
 
 ### 3. Application Deployment
@@ -384,7 +390,31 @@ pip install --upgrade pip setuptools wheel
 pip install -r requirements_compatible.txt
 ```
 
-#### 4. Other Common Issues
+#### 4. "Unable to create the django_migrations table (permission denied for schema public)"
+**Cause**: PostgreSQL user lacks CREATE privileges on the database
+
+**Solutions**:
+```bash
+# Connect to PostgreSQL as superuser
+sudo -u postgres psql
+
+# Grant necessary privileges to your user
+GRANT ALL PRIVILEGES ON DATABASE mcq_exam_db TO mcq_user;
+GRANT ALL PRIVILEGES ON SCHEMA public TO mcq_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO mcq_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO mcq_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO mcq_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO mcq_user;
+
+# Exit PostgreSQL
+\q
+
+# OR create a new user with proper privileges
+sudo -u postgres createuser --interactive --pwprompt mcq_user
+sudo -u postgres createdb --owner=mcq_user mcq_exam_db
+```
+
+#### 5. Other Common Issues
 - **502 Bad Gateway**: Check if Gunicorn is running
 - **Static files not loading**: Check Nginx configuration
 - **Database connection error**: Verify database credentials
