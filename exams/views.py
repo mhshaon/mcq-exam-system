@@ -450,6 +450,61 @@ def delete_all_questions(request, exam_id):
 
 
 @login_required
+def edit_question(request, exam_id, question_id):
+    """Edit an individual question"""
+    exam = get_object_or_404(Exam, id=exam_id)
+    question = get_object_or_404(Question, id=question_id, exam=exam)
+    
+    if not (request.user.is_admin() or exam.examiner == request.user):
+        raise PermissionDenied("You don't have permission to edit questions for this exam.")
+    
+    if request.method == 'POST':
+        form = QuestionWithChoicesForm(request.POST, question=question)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, f'Question {question.order} updated successfully.')
+                return redirect('exams:manage_questions', exam_id=exam.id)
+            except Exception as e:
+                messages.error(request, f'Error updating question: {str(e)}')
+    else:
+        form = QuestionWithChoicesForm(question=question)
+    
+    return render(request, 'exams/edit_question.html', {
+        'form': form,
+        'exam': exam,
+        'question': question
+    })
+
+
+@login_required
+def delete_question(request, exam_id, question_id):
+    """Delete an individual question"""
+    exam = get_object_or_404(Exam, id=exam_id)
+    question = get_object_or_404(Question, id=question_id, exam=exam)
+    
+    if not (request.user.is_admin() or exam.examiner == request.user):
+        raise PermissionDenied("You don't have permission to delete questions for this exam.")
+    
+    if request.method == 'POST':
+        question_order = question.order
+        question.delete()
+        
+        # Update exam question count
+        exam.num_questions = exam.questions.count()
+        exam.save()
+        
+        messages.success(request, f'Question {question_order} deleted successfully.')
+        return redirect('exams:manage_questions', exam_id=exam.id)
+    
+    # If GET request, show confirmation page
+    return render(request, 'exams/delete_question_confirm.html', {
+        'exam': exam,
+        'question': question
+    })
+
+
+@login_required
 def publish_exam(request, exam_id):
     """Publish/unpublish an exam"""
     exam = get_object_or_404(Exam, id=exam_id)

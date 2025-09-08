@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Question - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'exams:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'exams:exam_detail' exam.id %}">{{ exam.title }}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'exams:manage_questions' exam.id %}">Manage Questions</a></li>
+                <li class="breadcrumb-item active">Delete Question {{ question.order }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Delete Question {{ question.order }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-warning"></i> Warning!</h5>
+                    <p class="mb-0">You are about to delete <strong>Question {{ question.order }}</strong> from the exam "<strong>{{ exam.title }}</strong>".</p>
+                </div>
+                
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6><i class="fas fa-question-circle"></i> Question to be deleted:</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>{{ question.text }}</strong></p>
+                        
+                        <h6>Answer Choices:</h6>
+                        <ul class="list-unstyled">
+                            {% for choice in question.choices.all %}
+                                <li class="mb-1">
+                                    {% if choice.is_correct %}
+                                        <span class="badge bg-success me-2">✓</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary me-2">○</span>
+                                    {% endif %}
+                                    {{ choice.text }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-info-circle"></i> This action will:</h6>
+                    <ul class="mb-0">
+                        <li>Delete the question permanently</li>
+                        <li>Delete all associated answer choices</li>
+                        <li>Update the exam's question count</li>
+                        <li><strong>Cannot be undone!</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'exams:manage_questions' exam.id %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancel
+                    </a>
+                    
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete Question {{ question.order }}? This action cannot be undone!')">
+                            <i class="fas fa-trash"></i> Yes, Delete Question
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
