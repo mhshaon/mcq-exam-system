@@ -419,6 +419,37 @@ def manage_questions(request, exam_id):
 
 
 @login_required
+def delete_all_questions(request, exam_id):
+    """Delete all questions for an exam"""
+    exam = get_object_or_404(Exam, id=exam_id)
+    
+    if not (request.user.is_admin() or exam.examiner == request.user):
+        raise PermissionDenied("You don't have permission to delete questions for this exam.")
+    
+    if request.method == 'POST':
+        # Get count of questions before deletion
+        questions_count = exam.questions.count()
+        
+        # Delete all questions (choices will be deleted automatically due to CASCADE)
+        with transaction.atomic():
+            exam.questions.all().delete()
+            
+            # Update exam question count
+            exam.num_questions = 0
+            exam.save()
+        
+        messages.success(request, f'Successfully deleted {questions_count} questions from "{exam.title}".')
+        return redirect('exams:manage_questions', exam_id=exam.id)
+    
+    # If GET request, show confirmation page
+    questions_count = exam.questions.count()
+    return render(request, 'exams/delete_all_questions_confirm.html', {
+        'exam': exam, 
+        'questions_count': questions_count
+    })
+
+
+@login_required
 def publish_exam(request, exam_id):
     """Publish/unpublish an exam"""
     exam = get_object_or_404(Exam, id=exam_id)

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete All Questions - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'exams:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'exams:exam_detail' exam.id %}">{{ exam.title }}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'exams:manage_questions' exam.id %}">Manage Questions</a></li>
+                <li class="breadcrumb-item active">Delete All Questions</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Delete All Questions
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-warning"></i> Warning!</h5>
+                    <p class="mb-0">You are about to delete <strong>all {{ questions_count }} questions</strong> from the exam "<strong>{{ exam.title }}</strong>".</p>
+                </div>
+                
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-info-circle"></i> This action will:</h6>
+                    <ul class="mb-0">
+                        <li>Delete all {{ questions_count }} questions permanently</li>
+                        <li>Delete all associated answer choices</li>
+                        <li>Reset the exam's question count to 0</li>
+                        <li><strong>Cannot be undone!</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-lightbulb"></i> Before proceeding:</h6>
+                    <ul class="mb-0">
+                        <li>Make sure you have a backup of your questions if needed</li>
+                        <li>Consider downloading the questions as CSV first</li>
+                        <li>This will not affect any completed exam sessions</li>
+                    </ul>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'exams:manage_questions' exam.id %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancel
+                    </a>
+                    
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you absolutely sure you want to delete all {{ questions_count }} questions? This action cannot be undone!')">
+                            <i class="fas fa-trash"></i> Yes, Delete All Questions
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

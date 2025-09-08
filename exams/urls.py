@@ -14,6 +14,7 @@ urlpatterns = [
     path('exam/<int:exam_id>/edit/', views.edit_exam, name='edit_exam'),
     path('exam/<int:exam_id>/upload-questions/', views.upload_questions, name='upload_questions'),
     path('exam/<int:exam_id>/questions/', views.manage_questions, name='manage_questions'),
+    path('exam/<int:exam_id>/delete-all-questions/', views.delete_all_questions, name='delete_all_questions'),
     path('exam/<int:exam_id>/publish/', views.publish_exam, name='publish_exam'),
     path('exam/<int:exam_id>/results/', views.exam_results, name='exam_results'),
     path('exam/<int:exam_id>/publish-results/', views.publish_results, name='publish_results'),
