@@ -284,42 +284,37 @@
             </label>
         </div>
         
-        {% if not request.GET.role %}
         <div class="role-selection">
             <label class="form-label">
                 <i class="fas fa-user-tag me-2"></i>Select Your Role
             </label>
             
-            <div class="role-option" onclick="selectRole('examinee')">
-                <input type="radio" id="id_role_examinee" name="role" value="examinee" checked>
-                <label for="id_role_examinee">
+            <div class="role-option" onclick="selectRole('EXAMINEE')">
+                <input type="radio" id="id_role_0" name="role" value="EXAMINEE" 
+                       {% if not form.role.value or form.role.value == 'EXAMINEE' %}checked{% endif %}>
+                <label for="id_role_0">
                     <i class="fas fa-user-graduate me-2"></i>Examinee
                 </label>
                 <div class="role-description">Take exams and view results</div>
             </div>
             
-            <div class="role-option" onclick="selectRole('examiner')">
-                <input type="radio" id="id_role_examiner" name="role" value="examiner">
-                <label for="id_role_examiner">
+            <div class="role-option" onclick="selectRole('EXAMINER')">
+                <input type="radio" id="id_role_1" name="role" value="EXAMINER"
+                       {% if form.role.value == 'EXAMINER' %}checked{% endif %}>
+                <label for="id_role_1">
                     <i class="fas fa-chalkboard-teacher me-2"></i>Examiner
                 </label>
                 <div class="role-description">Create exams, set questions, and view results</div>
             </div>
+            
+            {% if form.role.errors %}
+                <div class="text-danger mt-2">
+                    {% for error in form.role.errors %}
+                        <small>{{ error }}</small>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
-        {% else %}
-        <input type="hidden" name="role" value="{{ request.GET.role }}">
-        <div class="role-info">
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                <strong>Role:</strong> 
-                {% if request.GET.role == 'examiner' %}
-                    <i class="fas fa-chalkboard-teacher me-1"></i>Examiner - Create and manage exams
-                {% else %}
-                    <i class="fas fa-user-graduate me-1"></i>Examinee - Take exams and view results
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
         
         <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" id="id_terms" required>
@@ -404,8 +399,12 @@ function selectRole(role) {
     // Add selected class to clicked option
     event.currentTarget.classList.add('selected');
     
-    // Check the radio button
-    document.getElementById('id_role_' + role).checked = true;
+    // Check the radio button based on role value
+    if (role === 'EXAMINEE') {
+        document.getElementById('id_role_0').checked = true;
+    } else if (role === 'EXAMINER') {
+        document.getElementById('id_role_1').checked = true;
+    }
 }
 
 function checkPasswordStrength(password) {

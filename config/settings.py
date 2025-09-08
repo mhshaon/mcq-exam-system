@@ -136,6 +136,12 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_MIN_LENGTH = 3
 ACCOUNT_USERNAME_BLACKLIST = ['admin', 'administrator', 'root', 'user', 'test']
 
+# Custom signup form and adapter
+ACCOUNT_FORMS = {
+    'signup': 'accounts.forms.CustomSignupForm',
+}
+ACCOUNT_ADAPTER = 'accounts.adapters.CustomAccountAdapter'
+
 # Custom authentication backends
 AUTHENTICATION_BACKENDS = [
     'accounts.backends.EmailOrUsernameModelBackend',  # Custom backend for email/username login
