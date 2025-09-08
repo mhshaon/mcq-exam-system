@@ -22,6 +22,12 @@ class CustomSignupForm(SignupForm):
             self.fields['role'].initial = self.initial['role']
         elif 'role' in self.data:
             self.fields['role'].initial = self.data['role']
+        
+        # Handle URL parameter for role selection
+        if hasattr(self, 'request') and self.request:
+            role_param = self.request.GET.get('role', '').upper()
+            if role_param in [choice[0] for choice in User.Role.choices]:
+                self.fields['role'].initial = role_param
     
     def save(self, request):
         # Call the parent save method to create the user
