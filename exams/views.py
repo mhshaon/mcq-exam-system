@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.core.exceptions import PermissionDenied
 from .models import Exam, Question, Choice, ExamSession, Answer
-from .forms import ExamForm, QuestionUploadForm
+from .forms import ExamForm, QuestionUploadForm, QuestionWithChoicesForm
 
 
 def home(request):
